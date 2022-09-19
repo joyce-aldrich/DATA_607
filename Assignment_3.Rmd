@@ -1,0 +1,75 @@
+---
+title: "Assignment 3"
+author: "Joyce Aldrich"
+date: "2022-09-18"
+output: 
+---
+
+
+```{r}
+library(stringr)
+library(tidyverse)
+```
+
+
+#1. Import Major_List into R 
+```{r}
+
+major_list <- read.csv(file = '/Users/joycealdrich/Documents/SPS Data Science/Data 607/Assignment_3/majors-list.csv')
+head(major_list)
+
+```
+
+```{r}
+grep(pattern = 'DATA|STATISTICS', major_list$Major, value = TRUE, ignore.case = TRUE)
+```
+
+
+#2 
+```{r}
+fruits <- c("bell pepper", "bilberry", "blackberry", "blood orange", "blueberry", "cantaloupe", "chili pepper", "cloudberry", "elderberry", "lime", "lychee", "mulberry", "olive", "salal berry")
+
+```
+
+```{r}
+string_fruits <- paste('c(', paste('"',fruits,'"', sep = "",collapse =','), sep="", ')')
+
+writeLines(string_fruits)
+```
+
+#3 
+(.)\1\1 >> (.)\\1\\1 (correct format)
+## repeat char and then repeat that char again (aaa) & does not start on a new line 
+
+"(.)(.)\\2\\1"
+## first char / second char and then in the reverse  second char / first char (abba)
+
+(..)\1
+## two chas repeated twice (abab)
+
+"(.).\\1.\\1"
+## chars repeated three times with one char between each  (x.x.x)
+
+"(.)(.)(.).*\\3\\2\\1"
+## 3 chars in order with two chars between (.*) and then in the reverse order of 3 chars   (abc.*cba)
+
+
+#4 
+```{r}
+x1<- c("viv", "abba", "tot", "zz")
+
+
+str_view(x1, "^(.)((.*\\1$)|\\1$)")
+```
+```{r}
+x2 <-c("yoyo","coconut","church","coco")
+
+
+str_view(x2, "([A-Za-z][A-Za-z]).*\\1")
+```
+
+```{r}
+x3 <- c("eleven", "pepper","jamaica")
+str_view(x3, "([A-Za-z]).*\\1.*\\1" )
+```
+
