@@ -1,0 +1,258 @@
+---
+title: "Project1"
+author: "Joyce Aldrich"
+date: "2022-09-24"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+
+
+## Loading the txt file into R
+```{r}
+data <- read.table("/Users/joycealdrich/Documents/SPS Data Science/Data 607/Project_1/tournamentinfo.txt", header =FALSE,
+                   sep="+")
+```
+
+## removing the row of "----"
+```{r}
+library(dplyr)
+
+data <- data %>%
+         filter(V1 != "-----------------------------------------------------------------------------------------")
+```
+# Create row indicator 
+```{r}
+row_odd <- seq_len(nrow(data)) %% 2              
+row_odd             
+```
+#subset odd rows
+```{r}
+data_row_odd <- data[row_odd == 1, ]            
+data_row_odd                                    
+```
+#subset even rows
+```{r}
+data_row_even <- data[row_odd == 0, ]            
+data_row_even                                 
+```
+
+#creating a new data_frame to store tournament information
+```{r}
+Info <- data_frame(Info_1= data_row_odd,
+                   Info_2 = data_row_even)
+
+```
+
+# add a new variable by concating 2 varible into 1 
+```{r}
+library(stringr)
+
+Info_2<- mutate ( Info, Tournamentinfo =str_c(Info$Info_1, " ", Info$Info_2))
+
+```
+
+#removing the header from original txt 
+```{r}
+Info_2<- Info_2 [-c(1), ] 
+
+```
+
+##checking each str length 
+```{r}
+str_length(Info_2$Info_1)
+str_length(Info_2$Info_2)
+```
+
+
+## store a sample value which to find a location in the string
+```{r}
+text<-c("    1 | GARY HUA                        |6.0  |W  39|W  21|W  18|W  14|W   7|D  12|D   4|    ON | 15445895 / R: 1794   ->1817     |N:2  |W    |B    |W    |B    |W    |B    |W    |")
+```
+
+## Finding the location in the string
+```{r}
+str_locate(text, pattern = "    1 ")
+str_locate(text, pattern = "GARY HUA                        ")
+str_locate(text, pattern = "6.0  ")
+str_locate(text, pattern = "39")
+str_locate(text, pattern = "21")
+str_locate(text, pattern = "18")
+str_locate(text, pattern = "14")
+str_locate(text, pattern = "  7")
+str_locate(text, pattern = "12")
+str_locate(text, pattern = "  4")
+str_locate(text, pattern = "ON")
+str_locate(text, pattern = "1794")
+```
+
+# store values based on their location
+```{r}
+Number <- substr(Info_2$Tournamentinfo,1,6)
+Name <- substr(Info_2$Tournamentinfo,9,40)
+Total_Points<- substr(Info_2$Tournamentinfo,42,46)
+R1 <- substr(Info_2$Tournamentinfo,51,52)
+R2 <- substr(Info_2$Tournamentinfo,57,58)
+R3 <- substr(Info_2$Tournamentinfo,63,64)
+R4 <- substr(Info_2$Tournamentinfo,69,70)
+R5 <- substr(Info_2$Tournamentinfo,75,76)
+R6 <- substr(Info_2$Tournamentinfo,81,82)
+R7 <- substr(Info_2$Tournamentinfo,87,88)
+state <- substr(Info_2$Tournamentinfo,94,95)
+Pre_rating <- substr(Info_2$Tournamentinfo,113,116)
+
+```
+
+#creating a data.frame to store tournament info
+```{r}
+Tournament_Info <- data.frame(Play_ID = Number,
+                              Name = Name,
+                              State=state,
+                              Total_Points =Total_Points,
+                              Pre_R=Pre_rating,
+                              R1=R1, 
+                              R2=R2, 
+                              R3=R3, 
+                              R4=R4,
+                              R5=R5, 
+                              R6=R6,
+                              R7=R7
+                              )
+```
+
+
+## Creating Reference table to store players' ID and pre_rating
+```{r}
+
+Ref_Table <- data.frame(PlayID=as.numeric(Number),
+                        Pre_R= as.numeric(Pre_rating))
+
+```
+
+##creating the round table to store each round's opponent ID 
+```{r}
+
+R_Table <- data.frame(Play_ID=as.numeric(Number),
+                          R1_ID=as.numeric(R1), 
+                          R2_ID=as.numeric(R2), 
+                          R3_ID=as.numeric(R3), 
+                          R4_ID=as.numeric(R4),
+                          R5_ID=as.numeric(R5), 
+                          R6_ID=as.numeric(R6),
+                          R7_ID=as.numeric(R7)
+)
+```
+
+#insert R1's component's pre_rating
+```{r}
+library(dplyr)
+
+Temp1<-left_join(R_Table,Ref_Table,by =c("R1_ID"="PlayID"))
+
+colnames(Temp1)[9] <- "Pre_R_R1"
+```
+
+#insert R2's component's pre_rating
+```{r}
+library(dplyr)
+
+Temp2<-left_join(Temp1,Ref_Table,by =c("R2_ID"="PlayID"))
+
+colnames(Temp2)[10] <- "Pre_R_R2"
+```
+
+#insert R3's component's pre_rating
+```{r}
+library(dplyr)
+
+Temp3<-left_join(Temp2,Ref_Table,by =c("R3_ID"="PlayID"))
+
+colnames(Temp3)[11] <- "Pre_R_R3"
+```
+
+#insert R4's component's pre_rating
+```{r}
+library(dplyr)
+
+Temp4<-left_join(Temp3,Ref_Table,by =c("R4_ID"="PlayID"))
+
+colnames(Temp4)[12] <- "Pre_R_R4"
+```
+
+#insert R5's component's pre_rating
+```{r}
+library(dplyr)
+
+Temp5<-left_join(Temp4,Ref_Table,by =c("R5_ID"="PlayID"))
+
+colnames(Temp5)[13] <- "Pre_R_R5"
+```
+
+#insert R6's component's pre_rating
+```{r}
+library(dplyr)
+
+Temp6<-left_join(Temp5,Ref_Table,by =c("R6_ID"="PlayID"))
+
+colnames(Temp6)[14] <- "Pre_R_R6"
+```
+
+#insert R7's component's pre_rating
+```{r}
+library(dplyr)
+
+Temp7<-left_join(Temp6,Ref_Table,by =c("R7_ID"="PlayID"))
+
+colnames(Temp7)[15] <- "Pre_R_R7"
+```
+
+## creating a new data.frame for computing the pre_average rating
+```{r}
+Pre_Rating_Cal <- subset(Temp7, select= -c(2:8))
+```
+
+## counting NA in the each row
+```{r}
+Pre_Rating_Cal$CountNa <- rowSums(is.na(Pre_Rating_Cal))
+```
+
+## replacing NA into 0 
+```{r}
+Pre_Rating_Cal[is.na(Pre_Rating_Cal)] =0
+```
+
+## adding new column for Average_Pre_Rating_Opponents (=Sum_Pre_Rating/#ofRoundPlay)
+```{r}
+
+Pre_Rating_Cal_Final <-mutate(Pre_Rating_Cal,Average_Pre_Rating_Opponents = (Pre_R_R1+Pre_R_R2+Pre_R_R3+Pre_R_R4+Pre_R_R5+Pre_R_R6+Pre_R_R7)/(7-CountNa)
+           )
+```
+
+## creating a final data.frame to store the project1 values
+```{r}
+Project1 <- data_frame(Player_Name = Tournament_Info$Name,
+                       Player_State = Tournament_Info$State,
+                       Total_Points = Tournament_Info$Total_Points,
+                       Player_Pre_Rating = Tournament_Info$Pre_R,
+                       Average_Pre_Rating_Opponents = round(Pre_Rating_Cal_Final$Average_Pre_Rating_Opponents,0))
+```
+
+##export to csv file 
+```{r}
+write.csv(Project1, file='/Users/joycealdrich/Documents/SPS Data Science/Data 607/Project_1/DATA607_Project_1.csv')
+```
+
+
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
