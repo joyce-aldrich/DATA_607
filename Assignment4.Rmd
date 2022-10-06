@@ -1,0 +1,71 @@
+---
+title: "DATA607_Assignment4"
+author: "Joyce Aldrich"
+date: "2022-10-05"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+#1.load csv file into r
+```{r}
+flight <- read.csv (file ='/Users/joycealdrich/Documents/SPS Data Science/Data 607/Assignment_4/Flight.csv')
+head(flight)
+```
+
+```{r}
+library(tidyr)
+library(dplyr)
+```
+
+#2 remove empty row
+```{r}
+flight2 <- flight [-c(3),]
+flight2
+```
+#3 Put the airline name in the x col
+```{r}
+flight2$X <- c("ALASKA","ALASKA","AM WEST", "AM WEST")
+```
+
+#4 organize the table
+```{r}
+flight2 <- gather(flight2, "Destination", "Count", 3:7)
+```
+#5 rename the 1st and 2nd col
+```{r}
+flight2 <- rename(flight2, Airline=X, Status=X.1)
+```
+
+#6 reorder the col
+```{r}
+flight2 <- select(flight2, Airline, Destination, Status,Count)
+```
+
+#6 cast status and count
+```{r}
+flight3 <- flight2 %>%
+  pivot_wider(names_from = "Status", values_from = "Count")
+head(flight3)
+```
+#7 adding total col in the data.frame
+```{r}
+flight4 <- flight3 %>%
+  mutate(total=flight3$`on time`+flight3$delayed)
+```
+#8 adding delayed_rate col in the data.frame 
+#Noted that AM WEST airline's delayed rate in 5 different destination all higer than ALASKA airline.
+```{r}
+flight5 <- flight4 %>%
+  mutate(delayed_rate = flight4$delayed/flight4$total)
+flight5
+```
+
+#9 creating ggplot to compare delayed rate between two airlines and destination
+```{r}
+library(tidyverse)
+flight5 %>%
+  ggplot(aes(Airline,delayed_rate,color=Destination))+
+  geom_point()
+```
+
